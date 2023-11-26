@@ -1,5 +1,7 @@
 # Template for developing with docker
 It is implied that vite will be used on the client.
+You have to create .env files. See compose files and .env.production for vite. See https://vitejs.dev/guide/env-and-mode#env-files
+
 ## Dev mode
 ***docker compose -f compose.dev.yaml up --build***
 

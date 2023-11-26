@@ -1,0 +1,69 @@
+services:
+  client:
+    build:
+      context: ./client
+      dockerfile: Dockerfile.dev
+    env_file: .env
+    ports:
+      - $CLIENT_PORT:$CLIENT_PORT
+    volumes:
+      - ./client:/app
+    depends_on:
+     - server
+  server:
+    build:
+      context: ./server
+      dockerfile: Dockerfile.dev
+    env_file: .env
+    ports:
+      - $SERVER_PORT:$SERVER_PORT
+    volumes:
+      - ./server:/app
+    depends_on:
+      db:
+        condition: service_healthy
+    networks:
+      - backend
+  db:
+    image: postgres:16.1-alpine
+    container_name: postgres
+    restart: always
+    env_file: .env
+    ports:
+      - $POSTGRES_PORT:$POSTGRES_PORT
+    environment:
+      - POSTGRES_PASSWORD=$POSTGRES_PASSWORD
+      - POSTGRES_USER=$POSTGRES_USER
+      - POSTGRES_DB=$POSTGRES_DB
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready -U $POSTGRES_USER -d $POSTGRES_DB" ]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+    networks:
+      - backend
+  pgadmin:
+    image: dpage/pgadmin4:latest
+    container_name: pgadmin
+    restart: always
+    env_file: .env
+    ports:
+      - $PGADMIN_PORT:$PGADMIN_PORT
+    environment:
+      - PGADMIN_DEFAULT_EMAIL=$PGADMIN_DEFAULT_EMAIL
+      - PGADMIN_DEFAULT_PASSWORD=$PGADMIN_DEFAULT_PASSWORD
+      - PGADMIN_LISTEN_PORT=$PGADMIN_PORT
+    volumes:
+      - pgadmin-data:/var/lib/pgadmin
+    depends_on:
+      db:
+        condition: service_healthy
+    networks:
+      - backend
+volumes:
+  pgdata:
+  pgadmin-data:
+networks:
+  backend:

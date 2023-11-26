@@ -1,0 +1,17 @@
+FROM node:lts-alpine
+EXPOSE $SERVER_PORT
+
+# create and define the node_modules's cache directory
+RUN mkdir -p cache
+WORKDIR /cache
+
+COPY package.json ./
+RUN npm install
+
+WORKDIR /app
+COPY . .
+
+COPY /start-cmd.sh /usr/local/bin/start-cmd
+RUN chmod +x /usr/local/bin/start-cmd
+
+CMD ["start-cmd"]
